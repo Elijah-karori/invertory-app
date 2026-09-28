@@ -1,0 +1,6 @@
+{
+  "name": "ONT Network & Equipment Inventory System",
+  "description": "Full-stack ISP Operations, Telecom ERP, and Asset Management system with RBAC, serialized unit lifecycle tracking, and ACID audit ledger.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

@@ -1,0 +1,189 @@
+// ============================================================================
+// Prisma Schema for ONT Network & Equipment Inventory System
+// Provider: PostgreSQL
+// ============================================================================
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  Admin
+  Store_Manager    @map("Store Manager")
+  Field_Technician @map("Field Technician")
+  Support
+}
+
+enum AssetStatus {
+  In_Stock       @map("In Stock")
+  Issued_Out     @map("Issued / Out")
+  Under_Repair   @map("Under Repair")
+  Decommissioned
+}
+
+enum AssetCondition {
+  New
+  Good
+  Faulty
+  Refurbished
+  Not_Recorded   @map("Not Recorded")
+}
+
+enum TaskPriority {
+  Low
+  Normal
+  High
+  Critical
+}
+
+enum TaskStatus {
+  Assigned
+  Awaiting_Stock @map("Awaiting Stock")
+  Ready
+  In_Progress    @map("In Progress")
+  Completed
+  Cancelled
+}
+
+enum MovementDirection {
+  Stock_In  @map("Stock In")
+  Stock_Out @map("Stock Out")
+}
+
+model User {
+  id           String        @id @db.VarChar(64)
+  name         String        @db.VarChar(128)
+  email        String        @unique @db.VarChar(128)
+  role         UserRole
+  department   String?       @default("Operations") @db.VarChar(64)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  custodianUnits  SerializedUnit[]     @relation("CustodianUnits")
+  assignedTasks   Task[]               @relation("AssignedTasks")
+  createdTasks    Task[]               @relation("CreatedTasks")
+  assignedTickets CustomerIssue[]      @relation("AssignedTickets")
+  loggedTickets   CustomerIssue[]      @relation("LoggedTickets")
+  transactions    TransactionLedger[]  @relation("PerformedTransactions")
+
+  @@map("users")
+}
+
+model ItemCatalog {
+  sku          String        @id @db.VarChar(64)
+  category     String        @db.VarChar(64)
+  model        String        @db.VarChar(128)
+  manufacturer String?       @default("Generic") @db.VarChar(64)
+  unitCost     Decimal       @default(0.00) @map("unit_cost") @db.Decimal(12, 2)
+  reorderLevel Int           @default(3) @map("reorder_level")
+  isSerialized Boolean       @default(false) @map("is_serialized")
+  specifications String?     @db.Text
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  serializedUnits SerializedUnit[]
+  transactions    TransactionLedger[]
+  tasks           Task[]
+
+  @@map("item_catalog")
+}
+
+model SerializedUnit {
+  assetId         String         @id @map("asset_id") @db.VarChar(64)
+  sku             String         @db.VarChar(64)
+  category        String         @db.VarChar(64)
+  model           String         @db.VarChar(128)
+  serialNumber    String         @unique @map("serial_number") @db.VarChar(128)
+  macAddress      String?        @map("mac_address") @db.VarChar(64)
+  status          AssetStatus    @default(In_Stock)
+  condition       AssetCondition @default(New)
+  currentLocation String         @default("Main Store") @map("current_location") @db.VarChar(128)
+  currentCustodianId String?     @map("current_custodian_id") @db.VarChar(64)
+  notes           String?        @db.Text
+  createdAt       DateTime       @default(now()) @map("created_at")
+  updatedAt       DateTime       @updatedAt @map("updated_at")
+
+  itemCatalog     ItemCatalog    @relation(fields: [sku], references: [sku], onDelete: Cascade)
+  custodian       User?          @relation("CustodianUnits", fields: [currentCustodianId], references: [id])
+  transactions    TransactionLedger[]
+
+  @@index([status])
+  @@index([currentCustodianId])
+  @@map("serialized_units")
+}
+
+model TransactionLedger {
+  id            String            @id @db.VarChar(64)
+  date          DateTime          @default(now()) @db.Date
+  direction     MovementDirection
+  sku           String            @db.VarChar(64)
+  assetId       String?           @map("asset_id") @db.VarChar(64)
+  quantity      Int
+  unitCost      Decimal           @default(0.00) @map("unit_cost") @db.Decimal(12, 2)
+  totalCost     Decimal           @default(0.00) @map("total_cost") @db.Decimal(14, 2)
+  performedById String            @map("performed_by_id") @db.VarChar(64)
+  costType      String            @map("cost_type") @db.VarChar(64)
+  taskId        String?           @map("task_id") @db.VarChar(64)
+  site          String?           @db.VarChar(128)
+  notes         String?           @db.Text
+  createdAt     DateTime          @default(now()) @map("created_at")
+
+  catalogItem   ItemCatalog       @relation(fields: [sku], references: [sku])
+  asset         SerializedUnit?   @relation(fields: [assetId], references: [assetId])
+  performedBy   User              @relation("PerformedTransactions", fields: [performedById], references: [id])
+  task          Task?             @relation(fields: [taskId], references: [id])
+
+  @@index([sku])
+  @@index([assetId])
+  @@index([date])
+  @@map("transaction_ledger")
+}
+
+model Task {
+  id           String        @id @db.VarChar(64)
+  title        String        @db.VarChar(255)
+  assigneeId   String?       @map("assignee_id") @db.VarChar(64)
+  priority     TaskPriority  @default(Normal)
+  status       TaskStatus    @default(Assigned)
+  requiredSku  String?       @map("required_sku") @db.VarChar(64)
+  requiredQty  Int           @default(0) @map("required_qty")
+  site         String?       @db.VarChar(128)
+  reference    String?       @db.VarChar(128)
+  notes        String?       @db.Text
+  createdById  String?       @map("created_by_id") @db.VarChar(64)
+  stockReadyAt DateTime?     @map("stock_ready_at")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  assignee     User?         @relation("AssignedTasks", fields: [assigneeId], references: [id])
+  createdBy    User?         @relation("CreatedTasks", fields: [createdById], references: [id])
+  catalogItem  ItemCatalog?  @relation(fields: [requiredSku], references: [sku])
+  transactions TransactionLedger[]
+
+  @@map("tasks")
+}
+
+model CustomerIssue {
+  ticketId      String        @id @map("ticket_id") @db.VarChar(64)
+  customerName  String        @map("customer_name") @db.VarChar(128)
+  accountNumber String?       @map("account_number") @db.VarChar(64)
+  issueCategory String        @map("issue_category") @db.VarChar(64)
+  assignedTechId String?      @map("assigned_tech_id") @db.VarChar(64)
+  oldDeviceSn   String?       @map("old_device_sn") @db.VarChar(128)
+  newDeviceSn   String?       @map("new_device_sn") @db.VarChar(128)
+  status        String        @default("Open") @db.VarChar(32)
+  loggedById    String?       @map("logged_by_id") @db.VarChar(64)
+  notes         String?       @db.Text
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  assignedTech  User?         @relation("AssignedTickets", fields: [assignedTechId], references: [id])
+  loggedBy      User?         @relation("LoggedTickets", fields: [loggedById], references: [id])
+
+  @@map("customer_issues")
+}
