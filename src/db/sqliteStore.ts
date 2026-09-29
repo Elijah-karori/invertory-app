@@ -325,6 +325,54 @@ export class SqliteDatabaseStore {
     }));
   }
 
+  public addCatalogItem(item: Omit<ItemCatalog, 'createdAt' | 'updatedAt'>, user: User): ItemCatalog {
+    if (!this.db) throw new Error('Database not ready.');
+
+    const cleanSku = item.sku.trim().toUpperCase();
+    if (!cleanSku) throw new Error('SKU identifier is required.');
+    if (!item.model || !item.category) throw new Error('Model name and category are required.');
+
+    const existing = this.queryOne('SELECT sku FROM item_catalog WHERE sku = ?;', [cleanSku]);
+    if (existing) {
+      throw new Error(`SKU "${cleanSku}" already exists in the catalog.`);
+    }
+
+    this.execute(`
+      INSERT INTO item_catalog (sku, category, model, manufacturer, unit_cost, reorder_level, is_serialized, specifications)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+    `, [
+      cleanSku,
+      item.category.trim(),
+      item.model.trim(),
+      item.manufacturer?.trim() || 'Generic',
+      Number(item.unitCost || 0),
+      Number(item.reorderLevel || 3),
+      item.isSerialized ? 1 : 0,
+      item.specifications?.trim() || ''
+    ]);
+
+    const row = this.queryOne(`
+      SELECT sku, category, model, manufacturer, unit_cost as unitCost, reorder_level as reorderLevel,
+             is_serialized as isSerialized, specifications, created_at as createdAt, updated_at as updatedAt
+      FROM item_catalog
+      WHERE sku = ?;
+    `, [cleanSku]);
+
+    const isAdmin = user.role === 'Admin';
+    return {
+      sku: row.sku,
+      category: row.category,
+      model: row.model,
+      manufacturer: row.manufacturer,
+      unitCost: isAdmin ? Number(row.unitCost || 0) : 0,
+      reorderLevel: Number(row.reorderLevel || 3),
+      isSerialized: Boolean(row.isSerialized),
+      specifications: row.specifications,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt
+    };
+  }
+
   // Serialized Units
   public getSerializedUnits(): SerializedUnit[] {
     const rows = this.queryAll(`

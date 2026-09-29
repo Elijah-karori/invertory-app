@@ -67,6 +67,12 @@ export const api = {
 
   // Catalog & Stock
   getCatalog: (): Promise<ItemCatalog[]> => request<ItemCatalog[]>('/catalog'),
+  addCatalogItem: (item: Omit<ItemCatalog, 'createdAt' | 'updatedAt'>): Promise<ItemCatalog> => {
+    return request<ItemCatalog>('/catalog', {
+      method: 'POST',
+      body: JSON.stringify(item)
+    });
+  },
   getStockSummary: (): Promise<StockSummaryItem[]> => request<StockSummaryItem[]>('/stock/summary'),
 
   // Serialized Units

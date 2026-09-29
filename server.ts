@@ -105,6 +105,15 @@ app.get('/api/catalog', authenticate, (req: AuthenticatedRequest, res: Response)
   res.json(catalog);
 });
 
+app.post('/api/catalog', authenticate, requireRole('Admin', 'Store Manager'), (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const newItem = dbStore.addCatalogItem(req.body, req.user!);
+    res.status(201).json(newItem);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || 'Failed to add catalog item.' });
+  }
+});
+
 app.get('/api/stock/summary', authenticate, (req: AuthenticatedRequest, res: Response) => {
   const summary = dbStore.getStockSummary(req.user?.role);
   res.json(summary);
