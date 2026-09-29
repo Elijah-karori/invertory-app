@@ -29,11 +29,26 @@ export const CatalogPage: React.FC = () => {
   const [category, setCategory] = useState('XPON/ONT');
   const [model, setModel] = useState('');
   const [manufacturer, setManufacturer] = useState('');
+  const [description, setDescription] = useState('');
+  const [basePrice, setBasePrice] = useState(0);
   const [unitCost, setUnitCost] = useState(0);
   const [reorderLevel, setReorderLevel] = useState(3);
   const [isSerialized, setIsSerialized] = useState(true);
   const [specifications, setSpecifications] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
+
+  // Helper for SKU Auto-generation
+  const generateAutoSku = () => {
+    if (!model) {
+      setFormError('Please enter Equipment Model name first to generate SKU.');
+      return;
+    }
+    const catCode = category.replace(/[^A-Z]/gi, '').substring(0, 3).toUpperCase() || 'ITEM';
+    const modelCode = model.replace(/[^A-Z0-9]/gi, '').substring(0, 6).toUpperCase() || 'MOD';
+    const randomSuffix = Math.floor(100 + Math.random() * 900);
+    setSku(`SKU-${catCode}-${modelCode}-${randomSuffix}`);
+    setFormError(null);
+  };
 
   const { data: catalog = [], isLoading, refetch } = useQuery({
     queryKey: ['catalog', currentUser?.id],
@@ -47,6 +62,8 @@ export const CatalogPage: React.FC = () => {
       setSku('');
       setModel('');
       setManufacturer('');
+      setDescription('');
+      setBasePrice(0);
       setUnitCost(0);
       setReorderLevel(3);
       setSpecifications('');
@@ -62,8 +79,8 @@ export const CatalogPage: React.FC = () => {
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!sku.trim() || !model.trim() || !category.trim()) {
-      setFormError('SKU, Model, and Category are required.');
+    if (!model.trim() || !category.trim()) {
+      setFormError('Model and Category are required.');
       return;
     }
 
@@ -72,6 +89,8 @@ export const CatalogPage: React.FC = () => {
       category: category.trim(),
       model: model.trim(),
       manufacturer: manufacturer.trim() || 'Generic',
+      description: description.trim(),
+      basePrice: Number(basePrice) || 0,
       unitCost: Number(unitCost) || 0,
       reorderLevel: Number(reorderLevel) || 3,
       isSerialized,
@@ -87,6 +106,7 @@ export const CatalogPage: React.FC = () => {
       c.sku.toLowerCase().includes(q) ||
       c.model.toLowerCase().includes(q) ||
       c.category.toLowerCase().includes(q) ||
+      (c.description && c.description.toLowerCase().includes(q)) ||
       (c.manufacturer && c.manufacturer.toLowerCase().includes(q));
 
     const matchCat = categoryFilter === 'ALL' || c.category === categoryFilter;
@@ -183,11 +203,12 @@ export const CatalogPage: React.FC = () => {
             <thead className="bg-slate-950 text-slate-400 font-mono uppercase text-[11px] border-b border-slate-800">
               <tr>
                 <th className="p-3">SKU</th>
-                <th className="p-3">Equipment Model / Name</th>
+                <th className="p-3">Equipment Model & Description</th>
                 <th className="p-3">Category</th>
                 <th className="p-3">Manufacturer</th>
                 <th className="p-3 text-center">Tracking</th>
-                <th className="p-3 text-center">Reorder Level</th>
+                <th className="p-3 text-right">Base Price</th>
+                <th className="p-3 text-center">Reorder Trigger</th>
                 <th className="p-3 text-right">Unit Cost</th>
                 <th className="p-3">Technical Specs</th>
               </tr>
@@ -195,13 +216,13 @@ export const CatalogPage: React.FC = () => {
             <tbody className="divide-y divide-slate-850">
               {isLoading ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-slate-400">
+                  <td colSpan={9} className="p-8 text-center text-slate-400">
                     Loading catalog items...
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="p-8 text-center text-slate-400">
+                  <td colSpan={9} className="p-8 text-center text-slate-400">
                     No catalog items found.
                   </td>
                 </tr>
@@ -211,8 +232,11 @@ export const CatalogPage: React.FC = () => {
                     <td className="p-3 font-mono font-bold text-indigo-300">
                       {item.sku}
                     </td>
-                    <td className="p-3 text-white font-medium">
-                      {item.model}
+                    <td className="p-3">
+                      <div className="text-white font-medium">{item.model}</div>
+                      {item.description && (
+                        <div className="text-[11px] text-slate-400 truncate max-w-xs">{item.description}</div>
+                      )}
                     </td>
                     <td className="p-3 text-slate-400">
                       <span className="px-2 py-0.5 rounded bg-slate-800 text-[10px] font-mono text-slate-300">
@@ -230,6 +254,9 @@ export const CatalogPage: React.FC = () => {
                       ) : (
                         <span className="text-slate-500 font-mono text-[10px]">Bulk Item</span>
                       )}
+                    </td>
+                    <td className="p-3 text-right font-mono font-semibold text-emerald-400">
+                      {formatMoney(item.basePrice)}
                     </td>
                     <td className="p-3 text-center font-mono font-semibold text-amber-400">
                       ≤ {item.reorderLevel} units
@@ -274,15 +301,23 @@ export const CatalogPage: React.FC = () => {
             <form onSubmit={handleCreateSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold uppercase text-slate-400 mb-1">
-                    SKU Identifier
-                  </label>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="text-xs font-semibold uppercase text-slate-400">
+                      SKU Identifier
+                    </label>
+                    <button
+                      type="button"
+                      onClick={generateAutoSku}
+                      className="text-[10px] text-indigo-400 hover:underline font-mono"
+                    >
+                      [Auto Generate]
+                    </button>
+                  </div>
                   <input
                     type="text"
-                    required
                     value={sku}
                     onChange={e => setSku(e.target.value)}
-                    placeholder="e.g. SKU-ONT-HG8145X"
+                    placeholder="Auto-generated if left blank"
                     className="w-full p-2.5 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-indigo-500 font-mono"
                   />
                 </div>
@@ -306,6 +341,19 @@ export const CatalogPage: React.FC = () => {
                     <option value="Accessories">Accessories</option>
                   </select>
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold uppercase text-slate-400 mb-1">
+                  Product Description / Overview
+                </label>
+                <input
+                  type="text"
+                  value={description}
+                  onChange={e => setDescription(e.target.value)}
+                  placeholder="e.g. High capacity dual-band ONU with VoIP and USB"
+                  className="w-full p-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-indigo-500"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
@@ -337,10 +385,24 @@ export const CatalogPage: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold uppercase text-slate-400 mb-1">
-                    Unit Cost (KES)
+                    Base List Price (KES)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={basePrice}
+                    onChange={e => setBasePrice(parseFloat(e.target.value) || 0)}
+                    className="w-full p-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-indigo-500 font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold uppercase text-slate-400 mb-1">
+                    Unit Procurement Cost (KES)
                   </label>
                   <input
                     type="number"
@@ -351,10 +413,12 @@ export const CatalogPage: React.FC = () => {
                     className="w-full p-2 bg-slate-950 border border-slate-700 rounded-lg text-xs text-white focus:outline-none focus:border-indigo-500 font-mono"
                   />
                 </div>
+              </div>
 
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold uppercase text-slate-400 mb-1">
-                    Reorder Trigger
+                    Reorder Trigger Level
                   </label>
                   <input
                     type="number"
@@ -367,7 +431,7 @@ export const CatalogPage: React.FC = () => {
 
                 <div>
                   <label className="block text-xs font-semibold uppercase text-slate-400 mb-1">
-                    Tracking Type
+                    Tracking Mode
                   </label>
                   <select
                     value={isSerialized ? 'true' : 'false'}

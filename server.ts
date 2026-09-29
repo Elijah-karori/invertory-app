@@ -93,6 +93,26 @@ app.get('/api/users', authenticate, (req: AuthenticatedRequest, res: Response) =
   res.json(dbStore.getUsers());
 });
 
+app.post('/api/users', authenticate, requireRole('Admin'), (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { name, email, role, department } = req.body;
+    const newUser = dbStore.createUser({ name, email, role, department });
+    res.status(201).json(newUser);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || 'Failed to create user.' });
+  }
+});
+
+app.patch('/api/users/:id/role', authenticate, requireRole('Admin'), (req: AuthenticatedRequest, res: Response) => {
+  try {
+    const { role, department } = req.body;
+    const updatedUser = dbStore.updateUserRole(req.params.id, role, department);
+    res.json(updatedUser);
+  } catch (err: any) {
+    res.status(400).json({ error: err.message || 'Failed to update user role.' });
+  }
+});
+
 // 2. Dashboard KPIs & Financial Metrics
 app.get('/api/dashboard/stats', authenticate, (req: AuthenticatedRequest, res: Response) => {
   const stats = dbStore.getDashboardStats(req.user?.role);

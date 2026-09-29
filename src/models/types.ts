@@ -15,6 +15,8 @@ export interface ItemCatalog {
   category: string;
   model: string;
   manufacturer?: string;
+  description?: string;
+  basePrice?: number;
   unitCost: number; // Masked to 0 for non-Admins
   reorderLevel: number;
   isSerialized: boolean;
@@ -135,6 +137,8 @@ export interface StockSummaryItem {
   sku: string;
   model: string;
   category: string;
+  description?: string;
+  basePrice?: number;
   isSerialized: boolean;
   totalIn: number;
   totalOut: number;

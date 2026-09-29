@@ -61,6 +61,18 @@ export const api = {
 
   getCurrentUser: (): Promise<User> => request<User>('/auth/me'),
   getUsers: (): Promise<User[]> => request<User[]>('/users'),
+  createUser: (data: { name: string; email: string; role: string; department?: string }): Promise<User> => {
+    return request<User>('/users', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+  updateUserRole: (id: string, role: string, department?: string): Promise<User> => {
+    return request<User>(`/users/${id}/role`, {
+      method: 'PATCH',
+      body: JSON.stringify({ role, department })
+    });
+  },
 
   // Dashboard
   getDashboardStats: (): Promise<DashboardStats> => request<DashboardStats>('/dashboard/stats'),
