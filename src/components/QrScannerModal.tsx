@@ -10,7 +10,9 @@ import {
   Sparkles,
   AlertCircle,
   CheckCircle2,
-  ScanLine
+  ScanLine,
+  Upload,
+  Image as ImageIcon
 } from 'lucide-react';
 
 interface QrScannerModalProps {
@@ -47,6 +49,51 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
   const [torchOn, setTorchOn] = useState(false);
   const [hasTorch, setHasTorch] = useState(false);
   const [manualCode, setManualCode] = useState('');
+  const [imageError, setImageError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setImageError(null);
+    if (!file.type.startsWith('image/')) {
+      setImageError('Please select a valid image file (PNG, JPG, WEBP).');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        if (!ctx) {
+          setImageError('Failed to process image canvas context.');
+          return;
+        }
+
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+        const imageData = ctx.getImageData(0, 0, img.width, img.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: 'attemptBoth'
+        });
+
+        if (code && code.data) {
+          handleScanFound(code.data);
+        } else {
+          setImageError('No clear QR code or barcode detected in uploaded image. Please try another photo or enter S/N manually.');
+        }
+      };
+      img.onerror = () => {
+        setImageError('Unable to load image file.');
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
 
   // Audio Beep on successful scan using Web Audio API
   const playBeep = () => {
@@ -334,8 +381,34 @@ export const QrScannerModal: React.FC<QrScannerModalProps> = ({
           )}
         </div>
 
-        {/* Footer: Manual Entry & Quick Hardware Simulators */}
+        {/* Footer: Image Extraction, Manual Entry & Quick Hardware Simulators */}
         <div className="p-4 bg-slate-900 border-t border-slate-800 space-y-3">
+          {imageError && (
+            <div className="p-2.5 bg-rose-500/10 border border-rose-500/30 rounded-lg text-xs text-rose-300 flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+              <span>{imageError}</span>
+            </div>
+          )}
+
+          {/* Upload Image for QR/Barcode Extraction */}
+          <div className="flex items-center gap-2">
+            <input
+              type="file"
+              ref={fileInputRef}
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageFileChange}
+            />
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full py-2 px-3 bg-cyan-600/15 hover:bg-cyan-600/25 border border-cyan-500/30 text-cyan-300 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 transition"
+            >
+              <Upload className="w-4 h-4 text-cyan-400" />
+              <span>Extract QR / Barcode from Image File</span>
+            </button>
+          </div>
+
           {/* Manual S/N Fallback */}
           <form
             onSubmit={e => {
