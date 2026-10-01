@@ -87,6 +87,8 @@ export class SqliteDatabaseStore {
           category TEXT NOT NULL,
           model TEXT NOT NULL,
           manufacturer TEXT DEFAULT 'Generic',
+          description TEXT,
+          base_price REAL DEFAULT 0.00,
           unit_cost REAL NOT NULL DEFAULT 0.00,
           reorder_level INTEGER NOT NULL DEFAULT 3,
           is_serialized INTEGER NOT NULL DEFAULT 0,
@@ -192,26 +194,26 @@ export class SqliteDatabaseStore {
       ('USR-004', 'Faith Wambui', 'faith.tech@ontnetwork.isp', 'Field Technician', 'FTTH Installations'),
       ('USR-005', 'Kevin Mutua', 'support@ontnetwork.isp', 'Support', 'Customer Experience');
 
-      INSERT INTO item_catalog (sku, category, model, manufacturer, unit_cost, reorder_level, is_serialized, specifications) VALUES
-      ('SKU-ONT-HG8546M', 'XPON/ONT', 'EchoLife HG8546M', 'Huawei', 3800.00, 5, 1, '1GE + 3FE + 1POTS + 1USB + 2.4G Wi-Fi GPON'),
-      ('SKU-ONT-HG8145V5', 'XPON/ONT', 'EchoLife HG8145V5', 'Huawei', 4500.00, 3, 1, 'Dual-band Wi-Fi (2.4G/5G) + 4 GE ports'),
-      ('SKU-ONT-EG8145V5', 'XPON/ONT', 'EG8145V5', 'Huawei', 4800.00, 3, 1, 'Intelligent routing-type ONT, Gigabit AC Wi-Fi'),
-      ('SKU-ONT-HG8145V6', 'XPON/ONT', 'OptiXstar HG8145V6', 'Huawei', 6200.00, 2, 1, 'Wi-Fi 6 GPON terminal, 4*GE + 1*POTS'),
-      ('SKU-ONT-HG8245H', 'XPON/ONT', 'EchoLife HG8245H', 'Huawei', 4100.00, 3, 1, '4GE + 2POTS + 1USB + Wi-Fi GPON'),
-      ('SKU-ONT-XPON', 'XPON/ONT', 'XPON Dual-Mode Router', 'Generic', 3200.00, 6, 1, 'Dual-mode EPON/GPON ONU 1GE+1FE'),
-      ('SKU-ONT-GPON', 'XPON/ONT', 'GPON Router Standard', 'Generic', 3100.00, 5, 1, 'Standard GPON Optical Network Terminal SC/UPC'),
-      ('SKU-ONT-AN5506', 'XPON/ONT', 'AN5506-04-FS', 'FiberHome', 4300.00, 2, 1, 'Fiberhome GPON 4 GE ports, Wi-Fi'),
-      ('SKU-RTR-TLWR842N', 'Wireless Router', 'TL-WR842N 300Mbps', 'TP-Link', 2100.00, 4, 1, '300Mbps Multi-Function Wireless N Router'),
-      ('SKU-RTR-ZLTX25', 'Wireless Router', 'ZLT X25 Indoor CPE', 'Tozed', 5200.00, 2, 1, 'Indoor LTE/Fiber dual-WAN Wireless Router'),
-      ('SKU-NET-AR611VW', 'Enterprise Router', 'NetEngine AR611VW', 'Huawei', 18500.00, 2, 1, 'Enterprise branch router, 1*GE Combo WAN, 4*GE LAN'),
-      ('SKU-FAT-16P', 'FAT Box', '16-Port Fiber Access Terminal', 'OpticTech', 1900.00, 2, 1, 'Outdoor IP65 16-core Fiber Distribution Box'),
-      ('SKU-SPL-1X8', 'Passive Optics', '1x8 Optical PLC Splitter', 'Corning', 450.00, 5, 0, 'Mini steel tube PLC splitter SC/UPC'),
-      ('SKU-ATB-100', 'Passive Optics', 'Access Terminal Box 2-Port', 'Generic', 180.00, 8, 0, 'Indoor Rosette Terminal Box 2 Core'),
-      ('SKU-ADP-BOX', 'Passive Optics', 'Fiber Adapter Box SC/UPC', 'Generic', 95.00, 10, 0, 'Simplex SC/UPC blue female coupler adapter'),
-      ('SKU-PWR-ADP', 'Accessories', '12V 1.5A Power Adapter', 'Huntkey', 350.00, 10, 0, 'Universal DC power supply for ONTs'),
-      ('SKU-CBL-DROP', 'Fiber Cable', '2-Core FTTH Drop Cable Roll 2km', 'CommScope', 14500.00, 2, 0, 'Outdoor G.657A1 drop cable 2km drum'),
-      ('SKU-CBL-OUTDOOR', 'Fiber Cable', 'Outdoor Fiber Cable Roll 1km', 'CommScope', 9800.00, 2, 0, 'Armored outdoor single-mode fiber roll 1km'),
-      ('SKU-CBL-OUTDOOR-ETHER', 'Copper Cable', 'Outdoor Shielded Cat6 Cable 305m', 'D-Link', 11200.00, 2, 0, 'Weatherproof UV-resistant Cat6 FTP cable drum');
+      INSERT INTO item_catalog (sku, category, model, manufacturer, description, base_price, unit_cost, reorder_level, is_serialized, specifications) VALUES
+      ('SKU-ONT-HG8546M', 'XPON/ONT', 'EchoLife HG8546M', 'Huawei', 'Popular entry GPON terminal for residential FTTH', 4500.00, 3800.00, 5, 1, '1GE + 3FE + 1POTS + 1USB + 2.4G Wi-Fi GPON'),
+      ('SKU-ONT-HG8145V5', 'XPON/ONT', 'EchoLife HG8145V5', 'Huawei', 'High performance dual-band smart gateway', 5800.00, 4500.00, 3, 1, 'Dual-band Wi-Fi (2.4G/5G) + 4 GE ports'),
+      ('SKU-ONT-EG8145V5', 'XPON/ONT', 'EG8145V5', 'Huawei', 'Intelligent routing ONT with high throughput', 6200.00, 4800.00, 3, 1, 'Intelligent routing-type ONT, Gigabit AC Wi-Fi'),
+      ('SKU-ONT-HG8145V6', 'XPON/ONT', 'OptiXstar HG8145V6', 'Huawei', 'Next-gen Wi-Fi 6 optical terminal', 7900.00, 6200.00, 2, 1, 'Wi-Fi 6 GPON terminal, 4*GE + 1*POTS'),
+      ('SKU-ONT-HG8245H', 'XPON/ONT', 'EchoLife HG8245H', 'Huawei', 'Reliable legacy enterprise ONU', 5200.00, 4100.00, 3, 1, '4GE + 2POTS + 1USB + Wi-Fi GPON'),
+      ('SKU-ONT-XPON', 'XPON/ONT', 'XPON Dual-Mode Router', 'Generic', 'Dual EPON and GPON auto-sensing ONT', 4000.00, 3200.00, 6, 1, 'Dual-mode EPON/GPON ONU 1GE+1FE'),
+      ('SKU-ONT-GPON', 'XPON/ONT', 'GPON Router Standard', 'Generic', 'Standard single band subscriber CPE', 3900.00, 3100.00, 5, 1, 'Standard GPON Optical Network Terminal SC/UPC'),
+      ('SKU-ONT-AN5506', 'XPON/ONT', 'AN5506-04-FS', 'FiberHome', 'Fiberhome high capacity subscriber unit', 5500.00, 4300.00, 2, 1, 'Fiberhome GPON 4 GE ports, Wi-Fi'),
+      ('SKU-RTR-TLWR842N', 'Wireless Router', 'TL-WR842N 300Mbps', 'TP-Link', '300Mbps multi-function access point', 2800.00, 2100.00, 4, 1, '300Mbps Multi-Function Wireless N Router'),
+      ('SKU-RTR-ZLTX25', 'Wireless Router', 'ZLT X25 Indoor CPE', 'Tozed', 'Dual-WAN LTE & Fiber indoor CPE', 6800.00, 5200.00, 2, 1, 'Indoor LTE/Fiber dual-WAN Wireless Router'),
+      ('SKU-NET-AR611VW', 'Enterprise Router', 'NetEngine AR611VW', 'Huawei', 'Enterprise branch router with SD-WAN & IPsec', 24000.00, 18500.00, 2, 1, 'Enterprise branch router, 1*GE Combo WAN, 4*GE LAN'),
+      ('SKU-FAT-16P', 'FAT Box', '16-Port Fiber Access Terminal', 'OpticTech', 'IP65 rated outdoor optical distribution terminal', 2600.00, 1900.00, 2, 1, 'Outdoor IP65 16-core Fiber Distribution Box'),
+      ('SKU-SPL-1X8', 'Passive Optics', '1x8 Optical PLC Splitter', 'Corning', 'Steel tube mini optical PLC splitter', 650.00, 450.00, 5, 0, 'Mini steel tube PLC splitter SC/UPC'),
+      ('SKU-ATB-100', 'Passive Optics', 'Access Terminal Box 2-Port', 'Generic', 'Subscriber indoor wall socket Rosette box', 280.00, 180.00, 8, 0, 'Indoor Rosette Terminal Box 2 Core'),
+      ('SKU-ADP-BOX', 'Passive Optics', 'Fiber Adapter Box SC/UPC', 'Generic', 'Simplex SC/UPC coupler adapter connector', 150.00, 95.00, 10, 0, 'Simplex SC/UPC blue female coupler adapter'),
+      ('SKU-PWR-ADP', 'Accessories', '12V 1.5A Power Adapter', 'Huntkey', 'Heavy duty regulated power adapter for ONTs', 500.00, 350.00, 10, 0, 'Universal DC power supply for ONTs'),
+      ('SKU-CBL-DROP', 'Fiber Cable', '2-Core FTTH Drop Cable Roll 2km', 'CommScope', 'Outdoor self-supporting drop cable drum 2km', 18500.00, 14500.00, 2, 0, 'Outdoor G.657A1 drop cable 2km drum'),
+      ('SKU-CBL-OUTDOOR', 'Fiber Cable', 'Outdoor Fiber Cable Roll 1km', 'CommScope', 'Armored outdoor single mode trunk cable 1km', 13000.00, 9800.00, 2, 0, 'Armored outdoor single-mode fiber roll 1km'),
+      ('SKU-CBL-OUTDOOR-ETHER', 'Copper Cable', 'Outdoor Shielded Cat6 Cable 305m', 'D-Link', 'UV-protected outdoor FTP Cat6 cable roll', 14500.00, 11200.00, 2, 0, 'Weatherproof UV-resistant Cat6 FTP cable drum');
 
       INSERT INTO serialized_units (asset_id, sku, category, model, serial_number, mac_address, status, condition, current_location, current_custodian_id, notes) VALUES
       ('INV-ONT-0001', 'SKU-ONT-HG8546M', 'XPON/ONT', 'EchoLife HG8546M', '4857544321A89F01', '48:57:02:1A:89:F1', 'In Stock', 'New', 'Main Store - Rack A1', NULL, 'Optical power -18.2 dBm.'),
@@ -301,11 +303,51 @@ export class SqliteDatabaseStore {
     return row || undefined;
   }
 
+  public createUser(userData: { name: string; email: string; role: UserRole; department?: string }): User {
+    if (!this.db) throw new Error('Database not ready.');
+
+    const cleanEmail = userData.email.trim().toLowerCase();
+    const existing = this.queryOne('SELECT id FROM users WHERE LOWER(email) = ?;', [cleanEmail]);
+    if (existing) {
+      throw new Error(`User with email "${cleanEmail}" already exists.`);
+    }
+
+    const countRow = this.queryOne('SELECT COUNT(*) as count FROM users;');
+    const nextNum = Number(countRow?.count || 0) + 1;
+    const id = `USR-${String(nextNum).padStart(3, '0')}`;
+
+    this.execute(`
+      INSERT INTO users (id, name, email, role, department)
+      VALUES (?, ?, ?, ?, ?);
+    `, [id, userData.name.trim(), cleanEmail, userData.role, userData.department?.trim() || 'Operations']);
+
+    const user = this.getUserById(id);
+    if (!user) throw new Error('Failed to retrieve newly created user.');
+    return user;
+  }
+
+  public updateUserRole(userId: string, newRole: UserRole, department?: string): User {
+    if (!this.db) throw new Error('Database not ready.');
+
+    const existing = this.getUserById(userId);
+    if (!existing) throw new Error(`User ${userId} not found.`);
+
+    this.execute(`
+      UPDATE users
+      SET role = ?, department = COALESCE(?, department), updated_at = datetime('now')
+      WHERE id = ?;
+    `, [newRole, department?.trim() || null, userId]);
+
+    const updated = this.getUserById(userId);
+    if (!updated) throw new Error('Failed to retrieve updated user.');
+    return updated;
+  }
+
   // Item Catalog
   public getCatalog(role?: UserRole): ItemCatalog[] {
     const isAdmin = role === 'Admin';
     const rows = this.queryAll(`
-      SELECT sku, category, model, manufacturer, unit_cost as unitCost, reorder_level as reorderLevel, 
+      SELECT sku, category, model, manufacturer, description, base_price as basePrice, unit_cost as unitCost, reorder_level as reorderLevel,
              is_serialized as isSerialized, specifications, created_at as createdAt, updated_at as updatedAt
       FROM item_catalog
       ORDER BY sku ASC;
@@ -316,6 +358,8 @@ export class SqliteDatabaseStore {
       category: r.category,
       model: r.model,
       manufacturer: r.manufacturer,
+      description: r.description || '',
+      basePrice: Number(r.basePrice || 0),
       unitCost: isAdmin ? Number(r.unitCost || 0) : 0,
       reorderLevel: Number(r.reorderLevel || 3),
       isSerialized: Boolean(r.isSerialized),
@@ -328,9 +372,16 @@ export class SqliteDatabaseStore {
   public addCatalogItem(item: Omit<ItemCatalog, 'createdAt' | 'updatedAt'>, user: User): ItemCatalog {
     if (!this.db) throw new Error('Database not ready.');
 
-    const cleanSku = item.sku.trim().toUpperCase();
-    if (!cleanSku) throw new Error('SKU identifier is required.');
+    let cleanSku = item.sku?.trim().toUpperCase();
     if (!item.model || !item.category) throw new Error('Model name and category are required.');
+
+    // Auto SKU generation if not provided
+    if (!cleanSku) {
+      const catCode = item.category.replace(/[^A-Z]/gi, '').substring(0, 3).toUpperCase() || 'ITEM';
+      const modelCode = item.model.replace(/[^A-Z0-9]/gi, '').substring(0, 6).toUpperCase() || 'MOD';
+      const randomSuffix = Math.floor(100 + Math.random() * 900);
+      cleanSku = `SKU-${catCode}-${modelCode}-${randomSuffix}`;
+    }
 
     const existing = this.queryOne('SELECT sku FROM item_catalog WHERE sku = ?;', [cleanSku]);
     if (existing) {
@@ -338,13 +389,15 @@ export class SqliteDatabaseStore {
     }
 
     this.execute(`
-      INSERT INTO item_catalog (sku, category, model, manufacturer, unit_cost, reorder_level, is_serialized, specifications)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+      INSERT INTO item_catalog (sku, category, model, manufacturer, description, base_price, unit_cost, reorder_level, is_serialized, specifications)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
     `, [
       cleanSku,
       item.category.trim(),
       item.model.trim(),
       item.manufacturer?.trim() || 'Generic',
+      item.description?.trim() || '',
+      Number(item.basePrice || 0),
       Number(item.unitCost || 0),
       Number(item.reorderLevel || 3),
       item.isSerialized ? 1 : 0,
@@ -352,7 +405,7 @@ export class SqliteDatabaseStore {
     ]);
 
     const row = this.queryOne(`
-      SELECT sku, category, model, manufacturer, unit_cost as unitCost, reorder_level as reorderLevel,
+      SELECT sku, category, model, manufacturer, description, base_price as basePrice, unit_cost as unitCost, reorder_level as reorderLevel,
              is_serialized as isSerialized, specifications, created_at as createdAt, updated_at as updatedAt
       FROM item_catalog
       WHERE sku = ?;
@@ -364,6 +417,8 @@ export class SqliteDatabaseStore {
       category: row.category,
       model: row.model,
       manufacturer: row.manufacturer,
+      description: row.description || '',
+      basePrice: Number(row.basePrice || 0),
       unitCost: isAdmin ? Number(row.unitCost || 0) : 0,
       reorderLevel: Number(row.reorderLevel || 3),
       isSerialized: Boolean(row.isSerialized),
@@ -408,12 +463,12 @@ export class SqliteDatabaseStore {
     const isAdmin = role === 'Admin';
     const rows = this.queryAll(`
       SELECT 
-        c.sku, c.model, c.category, c.is_serialized as isSerialized, c.unit_cost as unitCost, c.reorder_level as reorderLevel,
+        c.sku, c.model, c.category, c.description, c.base_price as basePrice, c.is_serialized as isSerialized, c.unit_cost as unitCost, c.reorder_level as reorderLevel,
         COALESCE(SUM(CASE WHEN t.direction = 'Stock In' THEN t.quantity ELSE 0 END), 0) AS totalIn,
         COALESCE(SUM(CASE WHEN t.direction = 'Stock Out' THEN t.quantity ELSE 0 END), 0) AS totalOut
       FROM item_catalog c
       LEFT JOIN transaction_ledger t ON c.sku = t.sku
-      GROUP BY c.sku, c.model, c.category, c.is_serialized, c.unit_cost, c.reorder_level
+      GROUP BY c.sku, c.model, c.category, c.description, c.base_price, c.is_serialized, c.unit_cost, c.reorder_level
       ORDER BY c.sku ASC;
     `);
 
@@ -435,6 +490,8 @@ export class SqliteDatabaseStore {
         sku: r.sku,
         model: r.model,
         category: r.category,
+        description: r.description || '',
+        basePrice: Number(r.basePrice || 0),
         isSerialized: Boolean(r.isSerialized),
         totalIn: inQty,
         totalOut: outQty,

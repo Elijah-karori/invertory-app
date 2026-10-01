@@ -54,7 +54,8 @@ export const Dashboard: React.FC = () => {
     const matchesSearch =
       item.sku.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.category.toLowerCase().includes(searchTerm.toLowerCase());
+      item.category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesCategory = categoryFilter === 'ALL' || item.category === categoryFilter;
     return matchesSearch && matchesCategory;
   });
@@ -320,9 +321,10 @@ export const Dashboard: React.FC = () => {
             <thead className="bg-slate-950/80 text-slate-400 font-mono uppercase text-[11px] border-b border-slate-800">
               <tr>
                 <th className="p-3">SKU Identifier</th>
-                <th className="p-3">Equipment Model / Name</th>
+                <th className="p-3">Equipment Model & Description</th>
                 <th className="p-3">Category</th>
                 <th className="p-3 text-center">Tracking</th>
+                <th className="p-3 text-right">Base Price</th>
                 <th className="p-3 text-right">In</th>
                 <th className="p-3 text-right">Out</th>
                 <th className="p-3 text-right">Net Qty</th>
@@ -338,14 +340,14 @@ export const Dashboard: React.FC = () => {
             <tbody className="divide-y divide-slate-850">
               {summaryLoading ? (
                 <tr>
-                  <td colSpan={isAdmin ? 10 : 8} className="p-8 text-center text-slate-400">
+                  <td colSpan={isAdmin ? 11 : 9} className="p-8 text-center text-slate-400">
                     <RefreshCw className="w-5 h-5 animate-spin mx-auto mb-2 text-indigo-400" />
                     Fetching inventory state...
                   </td>
                 </tr>
               ) : filteredSummary.length === 0 ? (
                 <tr>
-                  <td colSpan={isAdmin ? 10 : 8} className="p-8 text-center text-slate-400">
+                  <td colSpan={isAdmin ? 11 : 9} className="p-8 text-center text-slate-400">
                     No matching inventory items found.
                   </td>
                 </tr>
@@ -359,8 +361,11 @@ export const Dashboard: React.FC = () => {
                       <td className="p-3 font-mono font-medium text-indigo-300">
                         {item.sku}
                       </td>
-                      <td className="p-3 text-slate-200 font-medium">
-                        {item.model}
+                      <td className="p-3">
+                        <div className="text-slate-200 font-medium">{item.model}</div>
+                        {item.description && (
+                          <div className="text-[10px] text-slate-400 truncate max-w-xs">{item.description}</div>
+                        )}
                       </td>
                       <td className="p-3 text-slate-400">
                         <span className="px-2 py-0.5 rounded bg-slate-800 text-[10px] font-mono text-slate-300">
@@ -375,6 +380,9 @@ export const Dashboard: React.FC = () => {
                         ) : (
                           <span className="text-slate-500 font-mono text-[10px]">Bulk</span>
                         )}
+                      </td>
+                      <td className="p-3 text-right font-mono font-semibold text-emerald-400">
+                        {formatMoney(item.basePrice)}
                       </td>
                       <td className="p-3 text-right font-mono text-emerald-400">
                         +{item.totalIn}

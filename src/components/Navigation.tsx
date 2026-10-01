@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.tsx';
+import { useTheme } from '../context/ThemeContext.tsx';
 import { api } from '../services/api.ts';
 import {
   Network,
@@ -17,11 +18,15 @@ import {
   UserCheck,
   ChevronDown,
   Lock,
-  RefreshCw
+  RefreshCw,
+  Sun,
+  Moon,
+  Users
 } from 'lucide-react';
 
 export const Navigation: React.FC = () => {
   const { currentUser, allUsers, isAdmin, isStoreManager, isFieldTech, isSupport, switchUser } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [downloading, setDownloading] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
@@ -86,8 +91,17 @@ export const Navigation: React.FC = () => {
           </div>
         </div>
 
-        {/* Right Section: Role Simulator & Global Export */}
+        {/* Right Section: Role Simulator & Global Export & Theme Toggle */}
         <div className="flex items-center space-x-3">
+          {/* Theme Toggle Button */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg border border-slate-700 transition flex items-center justify-center"
+            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+          >
+            {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-indigo-400" />}
+          </button>
+
           {/* Excelize-Compatible Excel Export Dropdown */}
           <div className="relative">
             <button
@@ -328,6 +342,24 @@ export const Navigation: React.FC = () => {
           >
             <FileSpreadsheet className="w-4 h-4 text-purple-400" />
             <span className="font-semibold">Audit Ledger (Admin)</span>
+            <Lock className="w-3 h-3 text-purple-400/70" />
+          </NavLink>
+        )}
+
+        {/* STRICTLY ADMIN ONLY: USER MANAGEMENT */}
+        {isAdmin && (
+          <NavLink
+            to="/users-management"
+            className={({ isActive }) =>
+              `flex items-center gap-1.5 px-3.5 py-2.5 whitespace-nowrap transition border-b-2 ${
+                isActive
+                  ? 'border-purple-500 text-purple-400 bg-purple-500/5'
+                  : 'border-transparent text-purple-400/80 hover:text-purple-300 hover:bg-purple-900/10'
+              }`
+            }
+          >
+            <Users className="w-4 h-4 text-purple-400" />
+            <span className="font-semibold">User Admin</span>
             <Lock className="w-3 h-3 text-purple-400/70" />
           </NavLink>
         )}

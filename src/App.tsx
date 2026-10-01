@@ -2,7 +2,8 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext.tsx';
-import { Navigation } from './components/Navigation.tsx';
+import { ThemeProvider } from './context/ThemeContext.tsx';
+import { Sidebar } from './components/Sidebar.tsx';
 import { RoleGuard } from './components/RoleGuard.tsx';
 
 // Pages
@@ -15,6 +16,7 @@ import { CustomerSupport } from './pages/CustomerSupport.tsx';
 import { RequisitionsPage } from './pages/RequisitionsPage.tsx';
 import { AuditLedger } from './pages/AuditLedger.tsx';
 import { DatabaseDocs } from './pages/DatabaseDocs.tsx';
+import { UsersManagement } from './pages/UsersManagement.tsx';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,16 +29,26 @@ const queryClient = new QueryClient({
 });
 
 export default function App() {
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [collapsed, setCollapsed] = React.useState(false);
+
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <BrowserRouter>
-          <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-indigo-500/30 selection:text-indigo-200">
-            {/* Top Navigation */}
-            <Navigation />
+      <ThemeProvider>
+        <AuthProvider>
+          <BrowserRouter>
+          <div className="min-h-screen flex flex-col md:flex-row bg-slate-950 text-slate-100 selection:bg-indigo-500/30 selection:text-indigo-200">
+            {/* Sidebar Navigation */}
+            <Sidebar
+              mobileOpen={mobileOpen}
+              setMobileOpen={setMobileOpen}
+              collapsed={collapsed}
+              setCollapsed={setCollapsed}
+            />
 
             {/* Main View Area */}
-            <main className="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 lg:p-8">
+            <div className="flex-1 flex flex-col min-w-0">
+              <main className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8">
               <Routes>
                 {/* 1. Dashboard (All Users) */}
                 <Route path="/" element={<Dashboard />} />
@@ -76,7 +88,17 @@ export default function App() {
                   }
                 />
 
-                {/* 9. Database Architecture & Migrations Blueprint */}
+                {/* 9. Admin User Management (Strictly Admin Only) */}
+                <Route
+                  path="/users-management"
+                  element={
+                    <RoleGuard allowedRoles={['Admin']}>
+                      <UsersManagement />
+                    </RoleGuard>
+                  }
+                />
+
+                {/* 10. Database Architecture & Migrations Blueprint */}
                 <Route path="/database-docs" element={<DatabaseDocs />} />
 
                 {/* Fallback */}
@@ -91,9 +113,11 @@ export default function App() {
                 <span>Relational Architecture • ACID Enforced • RBAC Policy Active</span>
               </div>
             </footer>
+            </div>
           </div>
         </BrowserRouter>
       </AuthProvider>
-    </QueryClientProvider>
+    </ThemeProvider>
+  </QueryClientProvider>
   );
 }
